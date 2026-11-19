@@ -117,7 +117,7 @@ html{-webkit-text-size-adjust:100%}
     <button class="btn ghost" id="export">Download games.json</button>
     <button class="btn ghost" id="import">Import games.json</button>
     <label for="newpw" style="margin-bottom:0">Change the password</label>
-    <p class="tag" style="margin:0">Type a new password, then paste the hash below into PASS_HASH in index.html.</p>
+    <p class="tag" style="margin:0">Type a new password, then paste the hash below into PASS_HASH in the HTML.</p>
     <input id="newpw" placeholder="Type a new password" autocomplete="off">
     <div class="mono" id="newhash"></div>
     <div class="row"><button class="btn ghost" id="lock">Lock</button><button class="btn" id="close">Done</button></div>
@@ -147,13 +147,6 @@ html{-webkit-text-size-adjust:100%}
 </dialog>
 
 <script>
-// Games that ship with the site. To add games for every visitor, put a games.json
-// next to this file (see README) and it replaces these.
-const SEED = [
-  {id:"s1",title:"2048",url:"https://play2048.co/",genre:"Puzzle",desc:"Slide and merge tiles to reach 2048."},
-  {id:"s2",title:"Hextris",url:"https://hextris.io/",genre:"Arcade",desc:"Fast-paced puzzle on a spinning hexagon."},
-  {id:"s3",title:"Chrome Dino",url:"https://chromedino.com/",genre:"Arcade",desc:"The offline dinosaur runner, anytime."}
-];
 // Games built into this file. They always show and can't be removed from the page.
 const PINNED = [
   {id:"p1",title:"TBOI Online",url:"https://tboi.online/",genre:"Action",desc:"Top-down dungeon crawler, played right in your browser.",pinned:true}
@@ -162,13 +155,13 @@ const PASS_HASH="a2de93602cf5a7eb23a7b69d786d1af36ca83fbd14c4e4fc926220018519c25
 const KEY="gameshelf:v1";
 const COLORS=["#2D3CFF","#E4572E","#17A398","#7B2CBF","#D81E5B","#3A7D44","#F18F01"];
 let mem={added:[],hidden:[]};   // fallback if storage is blocked
-let base=SEED, filter="All";
+let filter="All";
 const $=id=>document.getElementById(id);
 
 function load(){try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&Array.isArray(v.added))return v}catch(e){}return mem}
 function save(d){mem=d;try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
 const safeUrl=u=>{try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:null}catch(e){return null}};
-const all=()=>{const d=load();return PINNED.concat(base,d.added).filter(g=>!d.hidden.includes(g.id))};
+const all=()=>{const d=load();return PINNED.concat(d.added).filter(g=>!d.hidden.includes(g.id))};
 
 function render(){
   const games=all(), q=$("q").value.trim().toLowerCase();
@@ -262,13 +255,7 @@ $("lock").onclick=()=>{setAdmin(false);$("con").close()};
 $("newpw").oninput=async e=>{$("newhash").textContent=e.target.value?await sha(e.target.value):""};
 try{if(sessionStorage.getItem("gs-admin"))setAdmin(true)}catch(e){}
 
-// If a games.json sits next to this file, it replaces the starter games for all visitors.
-async function loadBase(){
-  base=SEED;
-  try{const r=await fetch("games.json",{cache:"no-cache"});const j=r.ok?await r.json():null;if(Array.isArray(j)&&j.length)base=j.map((g,i)=>({id:g.id||"r"+i,...g}))}catch(e){}
-}
-const refresh=()=>loadBase().then(render);
-refresh();
+render();
 </script>
 </body>
 </html>
